@@ -1,0 +1,19 @@
+{
+	"name": "AzureBlob_SAS",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobStorage",
+		"typeProperties": {
+			"sasUri": "https://radhikastgdamg7370.blob.core.windows.net/stg-snowflake",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault1",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sas-token"
+			}
+		}
+	}
+}

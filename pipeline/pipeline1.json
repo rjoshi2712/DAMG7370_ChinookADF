@@ -1,0 +1,118 @@
+{
+	"name": "pipeline1",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.table_name",
+						"type": "Expression"
+					},
+					"batchCount": 2,
+					"activities": [
+						{
+							"name": "parquet_2_snowflake",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.00:10:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "ParquetSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "ParquetReadSettings"
+									}
+								},
+								"sink": {
+									"type": "SnowflakeV2Sink",
+									"importSettings": {
+										"type": "SnowflakeImportCopyCommand",
+										"additionalCopyOptions": {
+											"ON_ERROR": "CONTINUE"
+										},
+										"additionalFormatOptions": {
+											"ERROR_ON_COLUMN_COUNT_MISMATCH": "FALSE"
+										}
+									}
+								},
+								"enableStaging": true,
+								"stagingSettings": {
+									"linkedServiceName": {
+										"referenceName": "AzureBlob_SAS",
+										"type": "LinkedServiceReference"
+									},
+									"path": "stg-snowflake"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Parquet_sql",
+									"type": "DatasetReference",
+									"parameters": {
+										"container_name": "stg-snowflake",
+										"folder_name": {
+											"value": "@pipeline().parameters.folder_name",
+											"type": "Expression"
+										},
+										"file_name": {
+											"value": "@concat(item(),'.parquet')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Snowflake",
+									"type": "DatasetReference",
+									"parameters": {
+										"schema_name": "STAGE",
+										"table_name": {
+											"value": "@toUpper(item())",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"folder_name": {
+				"type": "string",
+				"defaultValue": "chinook"
+			},
+			"table_name": {
+				"type": "array",
+				"defaultValue": [
+					"Artist",
+					"Genre",
+					"Album",
+					"Customer",
+					"Invoice",
+					"InvoiceLine"
+				]
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-10-14T22:13:15Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
